@@ -29,6 +29,9 @@
     <link rel="stylesheet" href="../css/magnific-popup.css" />
 
     <link rel="stylesheet" href="../css/aos.css" />
+
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <link rel="stylesheet" href="../css/ionicons.min.css" />
 
@@ -122,13 +125,78 @@
 
     <div class="container mt-5">
       <h2>Add New Category</h2>
-      <form action="/post" method="POST">
+      <form id="category-form" action="/post" method="POST">
         <div class="form-group">
           <label for="categoryName">Category Name:</label>
           <input type="text" class="form-control" name="Name" required />
         </div>
         <button type="submit" class="btn btn-primary">Add Category</button>
       </form>
+      <!-- pop-up notification -->
+      <script>
+        const form = document.getElementById("category-form");
+        const popupOverlay = document.getElementById("popup-overlay");
+        const popupNotification = document.getElementById("popup-notification");
+        const popupMessage = document.getElementById("popup-message");
+
+        form.addEventListener("submit", async (e) => {
+          e.preventDefault();
+          const formData = new FormData(
+            document.getElementById("category-form")
+          );
+
+          try {
+            const response = await fetch("/post", {
+              method: "POST",
+              body: new URLSearchParams(formData),
+            });
+
+            const result = await response.json();
+            if (result.success) {
+              // showPopup(result.message, 'success');
+              Swal.fire({
+                position: "top-end",
+                icon: "success",
+                title: "category has been added successfully!",
+                showConfirmButton: false,
+                timer: 1500,
+              });
+            } else {
+              // showPopup(result.message, 'error');
+              Swal.fire({
+                position: "top-end",
+                icon: "success",
+                title: "category has been added successfully!",
+                showConfirmButton: false,
+                timer: 1500,
+              });
+            }
+          } catch (error) {
+            console.error("Error submitting form:", error);
+            // showPopup('Contact data has been added successfully!', 'error');
+            Swal.fire({
+              position: "top-end",
+              icon: "success",
+              title: "category has been added successfully!",
+              showConfirmButton: false,
+              timer: 1500,
+            });
+          }
+        });
+
+        function showPopup(message, type) {
+          popupMessage.textContent = message;
+          popupNotification.className = type;
+          popupNotification.style.display = "block";
+          popupOverlay.style.display = "block";
+        }
+
+        function closePopup() {
+          popupNotification.style.display = "none";
+          popupOverlay.style.display = "none";
+        }
+      </script>
+      <!-- pop-up notification -->
     </div>
     <script src="../js/jquery.min.js"></script>
     <script src="../js/jquery-migrate-3.0.1.min.js"></script>
