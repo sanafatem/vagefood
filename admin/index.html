@@ -24,6 +24,11 @@
       rel="stylesheet"
       href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"
     />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"
+    />
+
     <link rel="stylesheet" href="../css/open-iconic-bootstrap.min.css" />
     <link rel="stylesheet" href="../css/animate.css" />
     <link rel="stylesheet" href="../css/owl.carousel.min.css" />
@@ -141,12 +146,12 @@
 
     <script>
       // Fetch items from the server and display them in the table
-      // Fetch items from the server and display them in the table
       async function fetchItems() {
         try {
           const response = await fetch("/items");
           const items = await response.json();
           const tableBody = document.getElementById("item-table-body");
+          tableBody.innerHTML = ""; // Clear existing rows before adding new ones
           items.forEach((item) => {
             const row = `<tr>
         <td><img src="/uploads/${item.itemImage}" style="width: 100px; height: auto;"></td>
@@ -154,8 +159,8 @@
         <td>${item.itemPrice}</td>
         <td>${item.discPrice}</td>
         <td>
-          <a href="#" class="btn btn-primary">Edit</a>
-          <a href="#" class="btn btn-danger">Delete</a>
+              <a href="/admin/itemupdate.html?id=${item._id}" class="btn btn-primary">Edit</a>
+              <a href="#" class="btn btn-danger">Delete</a>
         </td>
       </tr>`;
             tableBody.innerHTML += row;
@@ -164,8 +169,6 @@
           console.error("Error fetching items:", error);
         }
       }
-
-      // Call the fetchItems function to populate the table on page load
       fetchItems();
     </script>
 
