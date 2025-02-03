@@ -94,7 +94,7 @@ app.post('/item', upload.single('itemImage'), async (req, res) => {
     console.log('Received item data:', req.body);
     
     const { itemName, itemDescription, itemPrice, discPrice, itemCategory } = req.body;
-    const itemImage = req.file.path; // Get the path of the uploaded file
+    const itemImage = req.file.filename; // Get the path of the uploaded file
 
     try {
         const users = new item({ itemName, itemDescription, itemPrice, discPrice, itemCategory, itemImage });
