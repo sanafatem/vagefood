@@ -1,3 +1,4 @@
+
 const express = require('express');
 const mongoose = require('mongoose');
 const path = require('path');
@@ -81,6 +82,62 @@ app.get('/items', async (req, res) => {
     } catch (error) {
         console.error('Error fetching items:', error);
         res.status(500).send('Error fetching items. Please try again later.');
+    }
+});
+
+// New route to fetch item by ID
+app.get('/items/:id', async (req, res) => {
+    try {
+        const itemId = req.params.id;
+        const itemData = await item.findById(itemId);
+        if (!itemData) {
+            return res.status(404).send('Item not found');
+        }
+        res.json(itemData);
+    } catch (error) {
+        console.error('Error fetching item by ID:', error);
+        res.status(500).send('Error fetching item. Please try again later.');
+    }
+});
+
+// New route to update item by ID
+app.put('/items/:id', upload.single('itemImage'), async (req, res) => {
+    const itemId = req.params.id;
+    const { itemName, itemPrice, discPrice } = req.body;
+    const itemImage = req.file ? req.file.filename : undefined; // Check if a new file is uploaded
+
+    try {
+        const updatedItem = await item.findByIdAndUpdate(itemId, {
+            itemName,
+            itemPrice,
+            discPrice,
+            itemImage: itemImage || undefined // Only update if a new image is provided
+        }, { new: true });
+
+        if (!updatedItem) {
+            return res.status(404).send('Item not found');
+        }
+
+        res.json(updatedItem);
+    } catch (error) {
+        console.error('Error updating item:', error);
+        res.status(500).send('Error updating item. Please try again later.');
+    }
+});
+
+// New route to delete item by ID
+app.delete('/items/:id', async (req, res) => {
+    const itemId = req.params.id;
+
+    try {
+        const deletedItem = await item.findByIdAndDelete(itemId);
+        if (!deletedItem) {
+            return res.status(404).send('Item not found');
+        }
+        res.send('Item deleted successfully!');
+    } catch (error) {
+        console.error('Error deleting item:', error);
+        res.status(500).send('Error deleting item. Please try again later.');
     }
 });
 

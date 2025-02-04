@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Edit Item</title>
+    <link rel="stylesheet" href="../css/bootstrap.min.css" />
+    <link rel="stylesheet" href="../css/style.css" />
+  </head>
+
+  <body>
+    <div class="container">
+      <h2>Edit Item</h2>
+      <form id="edit-item-form" enctype="multipart/form-data">
+        <div class="form-group">
+          <label for="itemName">Item Name</label>
+          <input type="text" class="form-control" id="itemName" required />
+        </div>
+        <div class="form-group">
+          <label for="itemPrice">Price</label>
+          <input type="number" class="form-control" id="itemPrice" required />
+        </div>
+        <div class="form-group">
+          <label for="discPrice">Discount Price</label>
+          <input type="number" class="form-control" id="discPrice" />
+        </div>
+        <div class="form-group">
+          <label for="itemImage">Item Image</label>
+          <input
+            type="file"
+            class="form-control-file"
+            id="itemImage"
+            required
+          />
+        </div>
+        <button type="submit" class="btn btn-primary">Save Changes</button>
+      </form>
+    </div>
+
+    <script>
+      // Fetch item details and populate the form
+      async function fetchItemDetails() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const itemId = urlParams.get("id");
+        const response = await fetch(`/items/${itemId}`);
+        const item = await response.json();
+
+        document.getElementById("itemName").value = item.itemName;
+        document.getElementById("itemPrice").value = item.itemPrice;
+        document.getElementById("discPrice").value = item.discPrice;
+      }
+
+      document
+        .getElementById("edit-item-form")
+        .addEventListener("submit", async (e) => {
+          e.preventDefault();
+          const urlParams = new URLSearchParams(window.location.search);
+          const itemId = urlParams.get("id");
+
+          const formData = new FormData();
+          formData.append(
+            "itemName",
+            document.getElementById("itemName").value
+          );
+          formData.append(
+            "itemPrice",
+            document.getElementById("itemPrice").value
+          );
+          formData.append(
+            "discPrice",
+            document.getElementById("discPrice").value
+          );
+          const itemImage = document.getElementById("itemImage").files[0];
+          if (itemImage) {
+            formData.append("itemImage", itemImage);
+          }
+
+          try {
+            const response = await fetch(`/items/${itemId}`, {
+              method: "PUT",
+              body: formData,
+            });
+
+            if (!response.ok) {
+              throw new Error("Failed to update item");
+            }
+
+            alert("Item updated successfully!");
+            window.location.href = "/admin/index.html"; // Redirect to the items list
+          } catch (error) {
+            alert("Error updating item: " + error.message);
+          }
+        });
+
+      // Call the function to fetch item details on page load
+      fetchItemDetails();
+    </script>
+  </body>
+</html>

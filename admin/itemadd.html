@@ -1,12 +1,15 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
-    <title>Vegefoods - Free Bootstrap 4 Template by Colorlib</title>
+    <title>Vegefoods - Add Item</title>
     <meta charset="utf-8" />
     <meta
       name="viewport"
       content="width=device-width, initial-scale=1, shrink-to-fit=no"
     />
+    <link rel="stylesheet" href="../css/bootstrap.min.css" />
+    <link rel="stylesheet" href="../css/style.css" />
+    <!-- <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script> -->
 
     <link
       href="https://fonts.googleapis.com/css?family=Poppins:200,300,400,500,600,700,800&display=swap"
@@ -37,85 +40,7 @@
     <link rel="stylesheet" href="../css/icomoon.css" />
     <link rel="stylesheet" href="../css/style.css" />
   </head>
-  <body class="goto-here">
-    <div class="py-1 bg-primary">
-      <div class="container">
-        <div
-          class="row no-gutters d-flex align-items-start align-items-center px-md-0"
-        >
-          <div class="col-lg-12 d-block">
-            <div class="row d-flex">
-              <div class="col-md pr-4 d-flex topper align-items-center">
-                <div
-                  class="icon mr-2 d-flex justify-content-center align-items-center"
-                >
-                  <span class="icon-phone2"></span>
-                </div>
-                <span class="text">+ 1235 2355 98</span>
-              </div>
-              <div class="col-md pr-4 d-flex topper align-items-center">
-                <div
-                  class="icon mr-2 d-flex justify-content-center align-items-center"
-                >
-                  <span class="icon-paper-plane"></span>
-                </div>
-                <span class="text">youremail@email.com</span>
-              </div>
-              <div
-                class="col-md-5 pr-4 d-flex topper align-items-center text-lg-right"
-              >
-                <span class="text"
-                  >3-5 Business days delivery &amp; Free Returns</span
-                >
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-    <nav
-      class="navbar navbar-expand-lg navbar-dark ftco_navbar bg-dark ftco-navbar-light"
-      id="ftco-navbar"
-    >
-      <div class="container">
-        <a class="navbar-brand" href="/users/index.html">Vegefoods</a>
-        <button
-          class="navbar-toggler"
-          type="button"
-          data-toggle="collapse"
-          data-target="#ftco-nav"
-          aria-controls="ftco-nav"
-          aria-expanded="false"
-          aria-label="Toggle navigation"
-        >
-          <span class="oi oi-menu"></span> Menu
-        </button>
-        <div class="collapse navbar-collapse" id="ftco-nav">
-          <ul class="navbar-nav ml-auto">
-            <li class="nav-item active">
-              <a href="/admin/index.html" class="nav-link">Home</a>
-            </li>
-            <li class="nav-item dropdown">
-              <a
-                class="nav-link dropdown-toggle"
-                href="#"
-                id="dropdown04"
-                data-toggle="dropdown"
-                aria-haspopup="true"
-                aria-expanded="false"
-                >Add</a
-              >
-              <div class="dropdown-menu" aria-labelledby="dropdown04">
-                <a class="dropdown-item" href="/admin/itemadd.html">Item Add</a>
-                <a class="dropdown-item" href="/admin/categoryadd.html"
-                  >Category Add</a
-                >
-              </div>
-            </li>
-          </ul>
-        </div>
-      </div>
-    </nav>
+  <body>
     <div class="container mt-5">
       <h2 class="mb-4">Add New Item</h2>
       <form
@@ -166,70 +91,67 @@
         </div>
         <button type="submit" class="btn btn-primary">Add Item</button>
       </form>
-      <!-- pop-up notification -->
-      <script>
-        const form = document.getElementById("item-form");
-        const popupOverlay = document.getElementById("popup-overlay");
-        const popupNotification = document.getElementById("popup-notification");
-        const popupMessage = document.getElementById("popup-message");
+    </div>
 
-        form.addEventListener("submit", async (e) => {
-          e.preventDefault();
-          const formData = new FormData(document.getElementById("item-form"));
+    <script>
+      const form = document.getElementById("item-form");
 
-          try {
-            const response = await fetch("/item", {
-              method: "POST",
-              body: formData,
-            });
+      form.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const formData = new FormData(form);
 
-            const result = await response.json();
-            if (result.success) {
-              // showPopup(result.message, 'success');
-              Swal.fire({
-                position: "top-end",
-                icon: "success",
-                title: "item has been added successfully!",
-                showConfirmButton: false,
-                timer: 1500,
-              });
-            } else {
-              // showPopup(result.message, 'error');
-              Swal.fire({
-                position: "top-end",
-                icon: "success",
-                title: "item has been added successfully!",
-                showConfirmButton: false,
-                timer: 1500,
-              });
-            }
-          } catch (error) {
-            console.error("Error submitting form:", error);
-            // showPopup('Contact data has been added successfully!', 'error');
+        try {
+          const response = await fetch("/item", {
+            method: "POST",
+            body: formData,
+          });
+
+          const result = await response.text();
+          if (response.ok) {
             Swal.fire({
               position: "top-end",
               icon: "success",
-              title: "item has been added successfully!",
+              title: result,
               showConfirmButton: false,
               timer: 1500,
             });
+            form.reset(); // Reset the form after successful submission
+          } else {
+            throw new Error(result);
           }
+        } catch (error) {
+          console.error("Error submitting form:", error);
+          Swal.fire({
+            position: "top-end",
+            icon: "error",
+            title: error.message,
+            showConfirmButton: false,
+            timer: 1500,
+          });
+        }
+      });
+
+      // Fetch categories for the dropdown
+      $(document).ready(function () {
+        $.ajax({
+          url: "/categories",
+          method: "GET",
+          success: function (data) {
+            data.forEach(function (category) {
+              $("#itemCategory").append(
+                new Option(category.Name, category._id)
+              );
+            });
+          },
+          error: function (err) {
+            console.error("Error fetching categories:", err);
+          },
         });
+      });
+    </script>
 
-        function showPopup(message, type) {
-          popupMessage.textContent = message;
-          popupNotification.className = type;
-          popupNotification.style.display = "block";
-          popupOverlay.style.display = "block";
-        }
-
-        function closePopup() {
-          popupNotification.style.display = "none";
-          popupOverlay.style.display = "none";
-        }
-      </script>
-      <!-- pop-up notification -->
-    </div>
+    <!-- <script src="../js/jquery.min.js"></script> -->
+    <!-- <script src="../js/bootstrap.min.js"></script> -->
 
     <script src="../js/jquery.min.js"></script>
     <script src="../js/jquery-migrate-3.0.1.min.js"></script>
