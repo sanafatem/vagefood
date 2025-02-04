@@ -151,24 +151,31 @@
           const response = await fetch("/items");
           const items = await response.json();
           const tableBody = document.getElementById("item-table-body");
-          tableBody.innerHTML = ""; // Clear existing rows before adding new ones
           items.forEach((item) => {
             const row = `<tr>
-        <td><img src="/uploads/${item.itemImage}" style="width: 100px; height: auto;"></td>
-        <td>${item.itemName}</td>
-        <td>${item.itemPrice}</td>
-        <td>${item.discPrice}</td>
-        <td>
-              <a href="/admin/itemupdate.html?id=${item._id}" class="btn btn-primary">Edit</a>
-              <a href="#" class="btn btn-danger">Delete</a>
-        </td>
-      </tr>`;
+						<td><img src="/uploads/${item.itemImage}" style="width: 100px; height: auto;"></td>
+						<td>${item.itemName}</td>
+						<td>${item.itemPrice}</td>
+						<td>${item.discPrice}</td>
+
+						<td>
+							<a href="#" class="btn btn-primary" onclick="editItem('${item._id}')">Edit</a>
+							<a href="#" class="btn btn-danger">Delete</a>
+						</td>
+					</tr>`;
             tableBody.innerHTML += row;
           });
         } catch (error) {
           console.error("Error fetching items:", error);
         }
       }
+
+      function editItem(itemId) {
+        // Redirect to the item add page with the item ID
+        window.location.href = `/admin/itemadd.html?id=${itemId}`;
+      }
+
+      // Call the fetchItems function to populate the table on page load
       fetchItems();
     </script>
 

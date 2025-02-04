@@ -3,7 +3,6 @@ const mongoose = require('mongoose');
 const path = require('path');
 const multer = require('multer');
 const fs = require('fs');
-
 const port = 3019;
 
 const app = express();
@@ -35,6 +34,8 @@ const storage = multer.diskStorage({
     }
 });
 
+const upload = multer({ storage: storage });
+
 // Define schema and model for category
 const categorySchema = new mongoose.Schema({
   Name: { type: String, required: true, unique: true, trim: true },
@@ -64,9 +65,8 @@ app.post('/post', async (req, res) => {
 
 // Define schema and model for item
 const itemSchema = new mongoose.Schema({
-  _id: { type: String, required: true,  trim: true },
-  itemName: { type: String, required: true,  trim: true },
-  itemDescription: { type: String, required: true,  trim: true },
+  itemName: { type: String, required: true, unique: true, trim: true },
+  itemDescription: { type: String, required: true, unique: true, trim: true },
   itemPrice: { type: Number, required: true, trim: true },
   discPrice: { type: Number, required: true, trim: true },
   itemCategory: { type: String, required: true, trim: true },
@@ -84,17 +84,6 @@ app.get('/items', async (req, res) => {
     }
 });
 
-app.get('/items/:id', async (req, res) => {
-  try {
-      const item = await item.findById(req.params.id);
-      if (!item) {
-          return res.status(404).json({ message: 'Item not found' });
-      }
-      res.json(item);
-  } catch (error) {
-      res.status(500).json({ message: 'Server error', error });
-  }
-});
 // Serve the order page
 app.get('/itemadd', (req, res) => {
   res.sendFile(path.join(__dirname, 'admin', 'itemadd.html'));
@@ -115,36 +104,6 @@ app.post('/item', upload.single('itemImage'), async (req, res) => {
     } catch (error) {
         console.error('Error saving itemadd:', error);
         res.status(500).send('Error saving itemadd data. Please try again later.');
-    }
-});
-
-// New route to fetch item details by ID
-app.get('/items/:id', async (req, res) => {
-    try {
-        const itemDetails = await item.findById(req.params.id);
-        res.json(itemDetails);
-    } catch (error) {
-        console.error('Error fetching item details:', error);
-        res.status(500).send('Error fetching item details. Please try again later.');
-    }
-});
-
-// New route to update item details
-app.put('/items/:id', upload.single('itemImage'), async (req, res) => {
-    try {
-        const updatedData = {
-            itemName: req.body.itemName,
-            itemDescription: req.body.itemDescription,
-            itemPrice: req.body.itemPrice,
-            discPrice: req.body.discPrice,
-            itemCategory: req.body.itemCategory,
-            itemImage: req.file ? req.file.filename : undefined, // Update image if a new one is uploaded
-        };
-        await item.findByIdAndUpdate(req.params.id, updatedData, { new: true });
-        res.send('Item updated successfully!');
-    } catch (error) {
-        console.error('Error updating item:', error);
-        res.status(500).send('Error updating item. Please try again later.');
     }
 });
 
