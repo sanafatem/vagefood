@@ -1,4 +1,3 @@
-
 const express = require('express');
 const mongoose = require('mongoose');
 const path = require('path');
@@ -6,7 +5,10 @@ const multer = require('multer');
 const fs = require('fs');
 const port = 3019;
 
+const cors = require('cors');
 const app = express();
+
+app.use(cors());
 app.use(express.static(__dirname));
 app.use(express.urlencoded({ extended: true }));
 
@@ -37,7 +39,22 @@ const storage = multer.diskStorage({
 
 const upload = multer({ storage: storage });
 
+app.get('/categories/:id', async (req, res) => {
+    try {
+        const categoryId = req.params.id;
+        const category = await categoryadd.findById(categoryId);
+        if (!category) {
+            return res.status(404).send('Category not found');
+        }
+        res.json(category);
+    } catch (error) {
+        console.error('Error fetching category by ID:', error);
+        res.status(500).send('Error fetching category. Please try again later.');
+    }
+});
+
 // Define schema and model for category
+
 const categorySchema = new mongoose.Schema({
   Name: { type: String, required: true, unique: true, trim: true },
 });
@@ -50,7 +67,8 @@ app.get('/', (req, res) => {
 });
 
 app.post('/post', async (req, res) => {
-  console.log('Received data:', req.body);
+  console.log('Received data:', req.body); // Log the received data
+
   const { Name } = req.body;
 
   try {
@@ -70,15 +88,16 @@ const itemSchema = new mongoose.Schema({
   itemDescription: { type: String, required: true, unique: true, trim: true },
   itemPrice: { type: Number, required: true, trim: true },
   discPrice: { type: Number, required: true, trim: true },
-  itemCategory: { type: String, required: true, trim: true },
+  itemCategory: { type: mongoose.Schema.Types.ObjectId, ref: 'category_master', required: true }, // Updated to reference category
   itemImage: { type: String, required: true, trim: true },
 });
 const item = mongoose.model('item_master', itemSchema);
 
 app.get('/items', async (req, res) => {
     try {
-        const items = await item.find({});
+        const items = await item.find({}).populate('itemCategory', 'Name');
         res.json(items);
+
     } catch (error) {
         console.error('Error fetching items:', error);
         res.status(500).send('Error fetching items. Please try again later.');
@@ -171,6 +190,37 @@ app.get('/categories', async (req, res) => {
     } catch (error) {
         console.error('Error fetching categories:', error);
         res.status(500).send('Error fetching categories. Please try again later.');
+    }
+});
+
+app.put('/edit/:id', async (req, res) => {
+    const categoryId = req.params.id;
+    const { name } = req.body;
+
+    try {
+        const updatedCategory = await categoryadd.findByIdAndUpdate(categoryId, { Name: name }, { new: true });
+        if (!updatedCategory) {
+            return res.status(404).send('Category not found');
+        }
+        res.json({ success: true, updatedCategory });
+    } catch (error) {
+        console.error('Error updating category:', error);
+        res.status(500).send('Error updating category. Please try again later.');
+    }
+});
+
+app.delete('/delete/:id', async (req, res) => {
+    const categoryId = req.params.id;
+
+    try {
+        const deletedCategory = await categoryadd.findByIdAndDelete(categoryId);
+        if (!deletedCategory) {
+            return res.status(404).send('Category not found');
+        }
+        res.json({ success: true });
+    } catch (error) {
+        console.error('Error deleting category:', error);
+        res.status(500).send('Error deleting category. Please try again later.');
     }
 });
 
