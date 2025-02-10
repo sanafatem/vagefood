@@ -215,6 +215,12 @@ app.post('/item', upload.single('itemImage'), async (req, res) => {
     const itemImage = req.file.filename; // Get the path of the uploaded file
 
     try {
+        // Check for existing item with the same name or description
+        const existingItem = await item.findOne({ $or: [{ itemName }, { itemDescription }] });
+        if (existingItem) {
+            return res.status(400).send('Item with the same name or description already exists.');
+        }
+
         const users = new item({ itemName, itemDescription, itemPrice, discPrice, itemCategory, itemImage });
         await users.save();
         console.log('itemadd saved:', users);
