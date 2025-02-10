@@ -11,14 +11,25 @@ const app = express();
 app.use(cors());
 app.use(express.static(__dirname));
 app.use(express.urlencoded({ extended: true }));
+app.use(express.json()); // Middleware to parse JSON request bodies
 
 mongoose.connect('mongodb://127.0.0.1:27017/vegefoods');
 
 const db = mongoose.connection;
 
 db.on('error', console.error.bind(console, 'connection error:'));
-db.once('open', () => {
+db.once('open', async () => {
   console.log('Connected to the database!');
+  
+  // Check if carts collection exists
+  const collections = await mongoose.connection.db.listCollections().toArray();
+  const cartCollectionExists = collections.some(collection => collection.name === 'carts');
+  
+//   if (!cartCollectionExists) {
+//     console.log('"carts" collection does not exist. It will be created when the first cart item is added.');
+//   } else {
+//     console.log('"carts" collection exists.');
+//   }
 });
 
 // Ensure uploads directory exists
@@ -54,7 +65,6 @@ app.get('/categories/:id', async (req, res) => {
 });
 
 // Define schema and model for category
-
 const categorySchema = new mongoose.Schema({
   Name: { type: String, required: true, unique: true, trim: true },
 });
@@ -97,25 +107,57 @@ app.get('/items', async (req, res) => {
     try {
         const items = await item.find({}).populate('itemCategory', 'Name');
         res.json(items);
-
     } catch (error) {
         console.error('Error fetching items:', error);
         res.status(500).send('Error fetching items. Please try again later.');
     }
 });
 
-// New route to fetch item by ID
-app.get('/items/:id', async (req, res) => {
+const Cart = mongoose.model('cart', new mongoose.Schema({
+    itemName: { type: String, required: true },
+    itemPrice: { type: Number, required: true },
+    quantity: { type: Number, required: true, default: 1 },
+    itemImage: { type: String, required: true },
+}));
+
+app.post('/add-to-cart', async (req, res) => {
+    const cartItem = req.body; // Get the item data from the request body
+    console.log('Adding item to cart:', cartItem); // Log the cart item being added
     try {
-        const itemId = req.params.id;
-        const itemData = await item.findById(itemId);
-        if (!itemData) {
-            return res.status(404).send('Item not found');
+        // Check if the item already exists in the cart
+        const existingCartItem = await Cart.findOne({ itemName: cartItem.itemName });
+        if (existingCartItem) {
+            // If it exists, update the quantity
+            existingCartItem.quantity += cartItem.quantity;
+            await existingCartItem.save();
+            return res.status(200).send('Item quantity updated in cart successfully!');
         }
-        res.json(itemData);
+
+        // If it does not exist, create a new cart item
+        const cart = new Cart(cartItem);
+        await cart.save();
+        res.status(201).send('Item added to cart successfully!');
     } catch (error) {
-        console.error('Error fetching item by ID:', error);
-        res.status(500).send('Error fetching item. Please try again later.');
+        console.error('Error adding item to cart:', error); // Log the error details
+        res.status(500).send('Error adding item to cart. Please try again later.');
+    }
+});
+
+// New GET endpoint to fetch cart items
+app.get('/cart', async (req, res) => {
+    try {
+        const cartItems = await Cart.find({});
+        console.log('Cart Items:', cartItems); // Log the cart items being sent
+        res.json(cartItems.map(item => ({
+            _id: item._id,
+            itemName: item.itemName,
+            itemPrice: item.itemPrice,
+            quantity: item.quantity,
+            itemImage: item.itemImage,
+        })));
+    } catch (error) {
+        console.error('Error fetching cart items:', error);
+        res.status(500).send('Error fetching cart items. Please try again later.');
     }
 });
 
