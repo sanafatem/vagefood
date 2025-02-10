@@ -10,9 +10,6 @@ const Cart = mongoose.model('cart', new mongoose.Schema({
 }));
 
 app.get('/cart', async (req, res) => {
-    async function fetchCartItems() {
-
-
     try {
         const cartItems = await Cart.find({});
         console.log('Cart Items:', cartItems);
@@ -22,7 +19,4 @@ app.get('/cart', async (req, res) => {
         console.error('Error fetching cart items:', error);
         res.status(500).send('Error fetching cart items. Please try again later.');
     }
-}
-
-
 });

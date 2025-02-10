@@ -171,43 +171,7 @@
                   </tr>
                 </thead>
                 <tbody>
-                  <script>
-                    $(document).ready(function () {
-                      fetch('/cart')
-                        .then(response => response.json())
-                        .then(data => {
-                          const cartBody = $('tbody');
-                          let totalPrice = 0;
-
-                          data.forEach(item => {
-                            cartBody.append(`
-                              <tr class="text-center">
-                                <td class="product-remove"><a href="#" class="remove"><span class="icon-close"></span></a></td>
-                                <td class="image-prod"><div class="img" style="background-image:url(../images/${item.itemImage});"></div></td>
-                                <td class="product-name">${item.itemName}</td>
-                                <td class="price">$${item.itemPrice}</td>
-                                <td class="quantity">
-                                  <div class="input-group mb-3">
-                                    <input type="text" class="quantity form-control" value="${item.quantity}" placeholder="" aria-label="Quantity" aria-describedby="button-addon2">
-                                  </div>
-                                </td>
-                                <td class="total">$${(item.itemPrice * item.quantity).toFixed(2)}</td>
-                              </tr>
-                            `);
-                            totalPrice += item.itemPrice * item.quantity;
-                          });
-
-                          // Display total price
-                          cartBody.append(`
-                            <tr class="text-center">
-                              <td colspan="5">Total</td>
-                              <td class="total">$${totalPrice.toFixed(2)}</td>
-                            </tr>
-                          `);
-                        })
-                        .catch(error => console.error('Error fetching cart data:', error));
-                    });
-                  </script>
+                  <!-- Cart items will be populated here -->
                 </tbody>
               </table>
             </div>
@@ -396,5 +360,35 @@
     <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBVWaKrjvy3MaE7SQ74_uJiULgl1JY0H2s&sensor=false"></script>
     <script src="../js/google-map.js"></script>
     <script src="../js/main.js"></script>
+    
+    <script>
+      $(document).ready(function () {
+        fetch('/cart')
+          .then(response => response.json())
+          .then(data => {
+            const cartBody = $('tbody');
+            let totalPrice = 0;
+
+            data.forEach(item => {
+              cartBody.append(`
+                <tr class="text-center">
+                  <td class="product-remove"><a href="#" class="remove"><span class="icon-close"></span></a></td>
+                  <td class="image-prod"><div class="img" style="background-image:url(../images/${item.itemImage});"></div></td>
+                  <td class="product-name">${item.itemName}</td>
+                  <td class="price">$${item.itemPrice}</td>
+                  <td class="quantity">
+                    <div class="input-group mb-3">
+                      <input type="text" class="quantity form-control" value="${item.quantity}" placeholder="" aria-label="Quantity" aria-describedby="button-addon2">
+                    </div>
+                  </td>
+                  <td class="total">$${(item.itemPrice * item.quantity).toFixed(2)}</td>
+                </tr>
+              `);
+              totalPrice += item.itemPrice * item.quantity;
+            });
+          })
+          .catch(error => console.error('Error fetching cart data:', error));
+      });
+    </script>
   </body>
 </html>
