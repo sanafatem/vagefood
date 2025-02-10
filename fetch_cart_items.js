@@ -9,7 +9,10 @@ const Cart = mongoose.model('cart', new mongoose.Schema({
     itemImage: { type: String, required: true },
 }));
 
-async function fetchCartItems() {
+app.get('/cart', async (req, res) => {
+    async function fetchCartItems() {
+
+
     try {
         const cartItems = await Cart.find({});
         console.log('Cart Items:', cartItems);
@@ -22,4 +25,4 @@ async function fetchCartItems() {
 }
 
 
-fetchCartItems();
+});
