@@ -1,68 +1,49 @@
-const mongoose = require('mongoose');
+const express = require('express');
+const router = express.Router();
+const Cart = require('./models/Cart'); // Assuming you have a Cart model
 
-mongoose.connect('mongodb://127.0.0.1:27017/vegefoods', { useNewUrlParser: true, useUnifiedTopology: true });
-
-const categorySchema = new mongoose.Schema({
-  Name: { type: String, required: true, unique: true, trim: true },
+// Add item to cart
+router.post('/add-to-cart', (req, res) => {
+  const item = req.body;
+  // Logic to add item to cart
+  Cart.findOneAndUpdate(
+    { userId: item.userId }, // Assuming you have userId to identify the cart
+    { $addToSet: { items: item } }, // Add item to cart
+    { new: true, upsert: true } // Create cart if it doesn't exist
+  )
+    .then(cart => res.status(200).json(cart))
+    .catch(err => res.status(500).json({ error: err.message }));
 });
 
-const categoryadd = mongoose.model('category_master', categorySchema);
+// Update item quantity and optionally item price in cart
+router.put('/update-cart', (req, res) => {
+  const { userId, itemId, quantity, itemPrice } = req.body; // Include itemPrice again
 
-const itemSchema = new mongoose.Schema({
-  itemName: { type: String, required: true, unique: true, trim: true },
-  itemDescription: { type: String, required: true, unique: true, trim: true },
-  itemPrice: { type: Number, required: true, trim: true },
-  discPrice: { type: Number, required: true, trim: true },
-  itemCategory: { type: mongoose.Schema.Types.ObjectId, ref: 'category_master', required: true },
-  itemImage: { type: String, required: true, trim: true },
+  Cart.findOne({ userId: userId, 'items.itemId': itemId })
+    .then(cart => {
+      if (!cart) {
+        return res.status(404).json({ error: 'Cart not found' });
+      }
+
+      const item = cart.items.find(item => item.itemId === itemId);
+      if (!item) {
+        return res.status(404).json({ error: 'Item not found in cart' });
+      }
+
+      // Update the quantity and price if provided
+      return Cart.findOneAndUpdate(
+        { userId: userId, 'items.itemId': itemId },
+        { 
+          $set: { 
+            'items.$.quantity': quantity, 
+            'items.$.itemPrice': itemPrice !== undefined ? itemPrice : item.itemPrice // Use the provided itemPrice or keep the original
+          } 
+        },
+        { new: true }
+      );
+    })
+    .then(cart => res.status(200).json(cart))
+    .catch(err => res.status(500).json({ error: err.message }));
 });
 
-const Cart = mongoose.model('cart', new mongoose.Schema({
-    itemName: { type: String, required: true },
-    itemPrice: { type: Number, required: true },
-    quantity: { type: Number, required: true, default: 1 },
-    itemImage: { type: String, required: true },
-}));
-
-app.post('/add-to-cart', async (req, res) => {
-    const cartItem = req.body; // Get the item data from the request body
-    console.log('Adding item to cart:', cartItem); // Log the cart item being added
-    try {
-        const existingItem = await Cart.findOne({ itemName: cartItem.itemName });
-        if (existingItem) {
-            // If the item already exists, update the quantity
-            existingItem.quantity += cartItem.quantity;
-            await existingItem.save();
-            res.status(200).send('Item quantity updated in cart successfully!');
-        } else {
-            const cart = new Cart(cartItem);
-            await cart.save();
-            res.status(201).send('Item added to cart successfully!');
-
-        }
-    } catch (error) {
-        console.error('Error adding item to cart:', error); // Log the error details
-        if (error.code === 11000) {
-            res.status(400).send('Item already exists in the cart.'); // Specific error message for duplicates
-        } else {
-            res.status(500).send('Error adding item to cart. Please try again later.');
-        }
-
-    }
-
-
-
-
-});
-
-Item.find({}) 
-  .populate('itemCategory', 'Name')
-  .then(items => {
-    console.log('Items in the database:', items);
-    renderItems(items); // Call the render function
-    mongoose.connection.close();
-  })
-  .catch(error => {
-    console.error('Error fetching items:', error);
-    mongoose.connection.close();
-  });
+module.exports = router;
