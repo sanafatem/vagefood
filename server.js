@@ -122,13 +122,15 @@ const Cart = mongoose.model('cart', new mongoose.Schema({
 
 app.post('/add-to-cart', async (req, res) => {
     const cartItem = req.body; // Get the item data from the request body
+    cartItem.itemPrice = cartItem.itemPrice * cartItem.quantity; // Calculate total price based on quantity
     console.log('Adding item to cart:', cartItem); // Log the cart item being added
     try {
         // Check if the item already exists in the cart
         const existingCartItem = await Cart.findOne({ itemName: cartItem.itemName });
         if (existingCartItem) {
             // If it exists, update the quantity
-            existingCartItem.quantity += cartItem.quantity;
+            existingCartItem.quantity += cartItem.quantity; // Update quantity
+            existingCartItem.itemPrice = existingCartItem.itemPrice * existingCartItem.quantity; // Update total price
             await existingCartItem.save();
             return res.status(200).send('Item quantity updated in cart successfully!');
         }

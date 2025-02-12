@@ -117,11 +117,11 @@
             <li class="nav-item">
               <a href="/users/contact.html" class="nav-link">Contact</a>
             </li>
-            <li class="nav-item cta cta-colored">
+            <!-- <li class="nav-item cta cta-colored">
               <a href="cart.html" class="nav-link"
                 ><span class="icon-shopping_cart"></span>[0]</a
               >
-            </li>
+            </li> -->
           </ul>
         </div>
       </div>
@@ -391,7 +391,8 @@
           });
 
           const totalCell = $(this).closest('tr').find('.total');
-          totalCell.text(`$${(price * quantity).toFixed(2)}`);
+          totalCell.text(`$${(price * quantity).toFixed(2)}`); // Calculate total for the item
+          updateTotalPrice(); // Update the overall total price
           updateTotalPrice();
         });
 
@@ -407,10 +408,10 @@
                   <td class="product-remove"><a href="#" class="remove"><span class="icon-close"></span></a></td>
                   <td class="image-prod"><div class="img" style="background-image:url(../images/${item.itemImage});"></div></td>
                   <td class="product-name" data-item-id="${item._id}">${item.itemName}</td>
-                  <td class="price">$${item.itemPrice}</td>
+                  <td class="price">$${item.itemPrice.toFixed(2)}</td>
                   <td class="quantity">
                     <div class="input-group mb-3">
-                      <input type="text" class="quantity form-control" value="${item.quantity}" placeholder="" aria-label="Quantity" aria-describedby="button-addon2">
+                      <span class="quantity-label text-center" style="color: black; display: inline-block; width: 100%;">${item.quantity}</span>
                     </div>
                   </td>
                   <td class="total">$${(item.itemPrice * item.quantity).toFixed(2)}</td>
@@ -418,12 +419,10 @@
               `);
               totalPrice += item.itemPrice * item.quantity;
             });
-            $('#total-price').text(`$${totalPrice.toFixed(2)}`);
+            $('#total-price').text(`$${totalPrice.toFixed(2)}`); // Update the footer total price
           })
           .catch(error => console.error('Error fetching cart data:', error));
       });
-
     </script>
   </body>
 </html>
-</create_file>
